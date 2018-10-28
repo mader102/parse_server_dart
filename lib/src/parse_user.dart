@@ -42,14 +42,27 @@ class User implements ParseBaseObject {
         headers: {"X-Parse-Session-Token": sessionId});
     return response.then((value) {
       _handleResponse(value.body);
+      print(objectData);
       return objectData;
     });
   }
 
+  void cleanObjectData()
+  {
+    if(objectData.containsKey('createdAt')){
+      objectData.remove('createdAt');
+    }
+
+    if(objectData.containsKey('updatedAt')){
+      objectData.remove('updatedAt');
+    }
+  }
+  
   Map<String, dynamic> _handleResponse(String response) {
     Map<String, dynamic> responseData = json.decode(response);
 
     if (responseData.containsKey('objectId')) {
+      cleanObjectData();
       objectData = responseData;
       this.client.credentials.sessionId = sessionId;
     }
@@ -78,12 +91,12 @@ class User implements ParseBaseObject {
         body: json.encode(objectData));
 
     return response.then((value) {
-      var responseData = _handleResponse(value.body);
+      var responseData = json.decode(value.body);
       // for error handling
       if(responseData.containsKey('error')){
         return responseData;
       }
-      return objectData;
+      return _handleResponse(value.body);
     });
   }
 
@@ -102,6 +115,7 @@ class User implements ParseBaseObject {
 
     return response.then((value) {
       _handleResponse(value.body);
+      print(objectData);
       return objectData;
     });
   }
@@ -163,9 +177,8 @@ class User implements ParseBaseObject {
 
   // update current user
   Future<Map<String, dynamic>> update(Map<String, dynamic> entries) async {
-    print(entries);
-    if (entries.isEmpty) return;
-
+    if (entries.isEmpty) return null;
+    
     final response = this.client.put(
         "${client.baseURL}/parse/users/" + objectId,
         headers: {"X-Parse-Session-Token": sessionId},

@@ -22,6 +22,17 @@ class ParseObject implements ParseBaseObject {
     }
   }
 
+  void cleanObjectData()
+  {
+    if(objectData.containsKey('createdAt')){
+      objectData.remove('createdAt');
+    }
+
+    if(objectData.containsKey('updatedAt')){
+      objectData.remove('updatedAt');
+    }
+  }
+  
   Future<Map> create([Map<String, dynamic> objectInitialData]) async {
     objectData = {}..addAll(objectData)..addAll(objectInitialData);
 
@@ -96,14 +107,15 @@ class ParseObject implements ParseBaseObject {
 
   // update current object
   Future<Map<String, dynamic>> update(Map<String, dynamic> entries) async {
-    print(entries);
-    if (entries.isEmpty) return;
+    if (entries.isEmpty) return null;
 
+   // print(objectData);
     final response = this.client.put(
         "${client.baseURL}${path}/${objectId}",
         body: json.encode(entries));
 
     return response.then((value) {
+      print(value.body);
       objectData = json.decode(value.body);
       return objectData;
     });
